@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const puppeteer = require('puppeteer');
 const admin = require('firebase-admin');
-const db = admin.firestore();
+const config = require('./data.json');
 
 let page, browser;
 
@@ -21,7 +21,7 @@ exports.pointBoat = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
-.pubsub.schedule('every day 12:00')
+.pubsub.schedule('every day 9:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
   if (!page) {
@@ -29,9 +29,9 @@ exports.pointBoat = functions.runWith({
   }
   await page.goto('https://ib.mbrace.or.jp/');
   console.log('goto');
-  await page.type('#memberNo', '');
-  await page.type('#pin', '');
-  await page.type('#authPassword', '');
+  await page.type('#memberNo', config.boatrace.memberNo);
+  await page.type('#pin', config.boatrace.pin);
+  await page.type('#authPassword', config.boatrace.authPassword);
 
   const newPagePromise = new Promise(resolve => browser.once('targetcreated', target => resolve(target.page())));
   await page.click('#loginButton');
@@ -46,7 +46,7 @@ exports.pointBoat = functions.runWith({
   await newPage.click('#charge');
   await newPage.waitForSelector('#chargeInstructAmt', {visible: true});
   await newPage.type('#chargeInstructAmt', "1");
-  await newPage.type('#chargeBetPassword', "ha2244");
+  await newPage.type('#chargeBetPassword', config.boatrace.chargeBetPassword);
   await newPage.click('#executeCharge');
   await newPage.waitForSelector('#ok', {visible: true});
   await newPage.click('#ok');

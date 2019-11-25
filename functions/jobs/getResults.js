@@ -56,9 +56,6 @@ exports.getResults = functions
     console.log(urlData);
     const results = await page.evaluate(async()=>{
       const arr = [];
-      return {
-        len: document.querySelectorAll('.table1 table').length,
-      };
       const trs = document.querySelectorAll('.table1 table')[0].querySelectorAll('tbody tr');
       trs.forEach(tr=>{
         const td = tr.querySelectorAll('td');
@@ -80,9 +77,9 @@ exports.getResults = functions
       });
       return arr;
     });
-//  for(const result of results){
-//      await db.collection(urlData.hd).doc(urlData.jcd + "_" + result.rno).set(result);
-//  }
+    for(const result of results){
+        await db.collection(urlData.hd).doc(urlData.jcd + "_" + result.rno).set(result);
+    }
     console.log(results);
   }
 });
