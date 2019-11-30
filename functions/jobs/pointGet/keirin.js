@@ -17,7 +17,7 @@ async function getBrowserPage () {
   return browser.newPage()
 }
 
-exports.pointSpat4 = functions.runWith({
+exports.pointKeirin = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
@@ -25,32 +25,30 @@ exports.pointSpat4 = functions.runWith({
 .pubsub.schedule('every day 12:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
-  await runSpat4(context);
+  await runKeirin(context);
 });
 
-exports.runSpat4 = runSpat4;
+exports.runKeirin = runKeirin;
 
-async function runSpat4(context){
+async function runKeirin(context){
   if (!page) {
     page = await getBrowserPage();
   }
-  await page.goto('https://www.spat4.jp/keiba/pc');
-  await page.type('#MEMBERNUMR', config.spat4.joinNo);
-  await page.type('#MEMBERIDR', config.spat4.userID);
+  await page.goto('https://keirin.jp/pc/depositinstruct');
+  await page.type('#txtnetVotingAutId', config.keirin.id);
+  await page.type('#txtnetVotingPass', config.keirin.pw);
   let loadPromise = page.waitForNavigation();
-  await page.click('[name=B1]');
+  await page.click('#btnlogin');
   await loadPromise;
 
-  await page.goto('https://www.spat4.jp/keiba/pc?HANDLERR=P600S');
-  await page.type('#ENTERR', '100');
+  await page.type('#UNQ_orexpandText_12', '1');
   loadPromise = page.waitForNavigation();
-  await page.click('[value=入金指示確認へ]');
+  await page.click('#UNQ_orbutton_36');
   await loadPromise;
 
-  await page.type('#MEMBERPASSR', config.spat4.pw);
+  await page.type('#UNQ_pfInputText_14', config.keirin.pin);
   loadPromise = page.waitForNavigation();
-  await page.click('[value=入金指示する]')
+  await page.click('#UNQ_orbutton_18');
   await loadPromise;
-
 
 }

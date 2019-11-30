@@ -21,6 +21,7 @@ exports.pointBoat = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
+.region('asia-northeast1')
 .pubsub.schedule('every day 9:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {

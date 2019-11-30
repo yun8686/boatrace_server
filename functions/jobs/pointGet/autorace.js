@@ -17,40 +17,42 @@ async function getBrowserPage () {
   return browser.newPage()
 }
 
-exports.pointSpat4 = functions.runWith({
+exports.pointAutorace = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
 .region('asia-northeast1')
-.pubsub.schedule('every day 12:00')
+.pubsub
+.schedule('every day 12:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
-  await runSpat4(context);
+  await runAutorace(context);
 });
 
-exports.runSpat4 = runSpat4;
+exports.runAutorace = runAutorace;
 
-async function runSpat4(context){
+async function runAutorace(context){
   if (!page) {
     page = await getBrowserPage();
+    page.on('dialog', async dialog => {
+      dialog.accept(); // OK
+    });
   }
-  await page.goto('https://www.spat4.jp/keiba/pc');
-  await page.type('#MEMBERNUMR', config.spat4.joinNo);
-  await page.type('#MEMBERIDR', config.spat4.userID);
+  await page.goto('https://pc.autoinet.jp/');
+  await page.type('[name=userId]', config.autorace.id);
+  await page.type('[name=password]', config.autorace.pw);
   let loadPromise = page.waitForNavigation();
-  await page.click('[name=B1]');
+  await page.click('[name=login]');
   await loadPromise;
 
-  await page.goto('https://www.spat4.jp/keiba/pc?HANDLERR=P600S');
-  await page.type('#ENTERR', '100');
+  await page.type('[name=passNo]', config.autorace.pin);
   loadPromise = page.waitForNavigation();
-  await page.click('[value=入金指示確認へ]');
+  await page.click('[name=btnWireIn]');
   await loadPromise;
 
-  await page.type('#MEMBERPASSR', config.spat4.pw);
+  await page.type('[name=wireInAmount]', "1");
   loadPromise = page.waitForNavigation();
-  await page.click('[value=入金指示する]')
+  await page.click('[name=refer]');
   await loadPromise;
-
 
 }

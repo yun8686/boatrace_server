@@ -9,3 +9,6 @@ Object.assign(exports, require('./jobs/pointGet/boatrace'));
 Object.assign(exports, require('./jobs/pointGet/charirot'));
 Object.assign(exports, require('./jobs/pointGet/rakuten'));
 Object.assign(exports, require('./jobs/pointGet/spat4'));
+Object.assign(exports, require('./jobs/pointGet/oddsPark'));
+Object.assign(exports, require('./jobs/pointGet/keirin'));
+Object.assign(exports, require('./jobs/pointGet/autorace'));

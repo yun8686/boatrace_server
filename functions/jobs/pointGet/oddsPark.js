@@ -17,7 +17,7 @@ async function getBrowserPage () {
   return browser.newPage()
 }
 
-exports.pointSpat4 = functions.runWith({
+exports.pointOddsPark = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
@@ -25,32 +25,34 @@ exports.pointSpat4 = functions.runWith({
 .pubsub.schedule('every day 12:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
-  await runSpat4(context);
+  await runOddsPark(context);
 });
 
-exports.runSpat4 = runSpat4;
+exports.runOddsPark = runOddsPark;
 
-async function runSpat4(context){
+async function runOddsPark(context){
   if (!page) {
     page = await getBrowserPage();
   }
-  await page.goto('https://www.spat4.jp/keiba/pc');
-  await page.type('#MEMBERNUMR', config.spat4.joinNo);
-  await page.type('#MEMBERIDR', config.spat4.userID);
+  await page.goto('https://www.oddspark.com/auth/NbNyukin.do');
+  await page.type('[name=SSO_ACCOUNTID]', config.oddspark.id);
+  await page.type('[name=SSO_PASSWORD]', config.oddspark.pw);
   let loadPromise = page.waitForNavigation();
-  await page.click('[name=B1]');
+  await page.click('#btn-login');
   await loadPromise;
 
-  await page.goto('https://www.spat4.jp/keiba/pc?HANDLERR=P600S');
-  await page.type('#ENTERR', '100');
+  await page.type('[name=INPUT_PIN]', config.oddspark.pin);
   loadPromise = page.waitForNavigation();
-  await page.click('[value=入金指示確認へ]');
+  await page.click('[name=送信]');
   await loadPromise;
 
-  await page.type('#MEMBERPASSR', config.spat4.pw);
+  await page.type('#nyukin', '1');
   loadPromise = page.waitForNavigation();
-  await page.click('[value=入金指示する]')
+  await page.click('.btn2');
   await loadPromise;
 
-
+  await page.type('#touhyoPassword', config.oddspark.pin);
+  loadPromise = page.waitForNavigation();
+  await page.click('.btn2');
+  await loadPromise;
 }

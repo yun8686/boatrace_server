@@ -1,0 +1,54 @@
+{
+  "spat4":{
+    "joinNo":"",
+    "userID":"",
+    "pw":""
+  },
+  "charirot":{
+    "id":"",
+    "pw":"",
+    "pn":""
+  },
+  "boatrace":{
+    "memberNo": "",
+    "pin":"",
+    "authPassword": "",
+    "chargeBetPassword": ""
+  },
+  "kdream":{
+    "nicname": "",
+    "pw": "",
+    "no": ""
+  },
+  "rakuten":{
+    "id":"",
+    "pw": ""
+  },
+  "rakutenkeiba":{
+    "pw": ""
+  },
+  "eshinbun":{
+    "pw": ""
+  },
+  "oddspark":{
+    "id":"",
+    "pw":"",
+    "pin":""
+  },
+  "keirin":{
+    "id":"",
+    "pw":"",
+    "pin":""
+  },
+  "autorace": {
+    "id": "",
+    "pw": "",
+    "pin": ""
+  },
+  "sokupad":{
+    "inet": "",
+    "join": "",
+    "rars": "",
+    "pw":""
+  }
+}

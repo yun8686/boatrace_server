@@ -21,6 +21,7 @@ exports.pointCharirot = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
+.region('asia-northeast1')
 .pubsub.schedule('every day 12:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
@@ -50,6 +51,5 @@ async function runCharirot(context){
   loadPromise = page.waitForNavigation();
   await page.click('[name=commit]');
   await loadPromise;
-  process.exit();
 
 }
