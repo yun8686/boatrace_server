@@ -29,10 +29,10 @@ exports.getResults = functions
     page = await getBrowserPage()
   }
   const getDate = (date)=>{date.setHours(date.getHours()+date.getTimezoneOffset()/60+9); return (date.getFullYear() + (""+(date.getMonth()+1)).slice(-2) + (""+(date.getDate())).slice(-2));};
-  var url = "http://www.boatrace.jp/owpc/pc/race/index?hd=" + (getDate(new Date()));
-  console.log("url goto start");
+  var url = "http://www.boatrace.jp/owpc/pc/race/index";
+  console.log("url goto start", url);
   await page.goto(url, {waitUntil: 'domcontentloaded'});
-  console.log("url goto end");
+  console.log("url goto end", url);
   var urls = await page.evaluate(async()=>{
     var list = document.querySelectorAll('li a[href]');
     var urls = [];

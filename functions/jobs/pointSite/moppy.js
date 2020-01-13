@@ -46,6 +46,9 @@ async function runMoppy(){
     await page.waitForSelector('#play');
     await page.click('#play');
     await loadPromise;
+    await page.evaluate((in_selectors) => {
+      document.querySelector("#save a").click();
+    });
   }
   if(true){
     await quizGame(page,{
@@ -127,7 +130,7 @@ async function quizGame(page, {
     if(!flg)break;
   }
   loadPromise = page.waitForNavigation();
-  await waitClick(page, selectors[1]);
+  await waitClick(page, selectors[1], {delay: 5000});
   await loadPromise;
 }
 async function waitClick(page, selector){

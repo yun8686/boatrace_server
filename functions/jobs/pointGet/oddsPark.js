@@ -4,6 +4,8 @@ const admin = require('firebase-admin');
 const config = require('./data.json');
 
 let page, browser;
+exports.runOddsPark = runOddsPark;
+exports.runPayment = runPayment;
 
 async function getBrowserPage () {
   const isDebug = process.env.NODE_ENV !== 'production'
@@ -27,8 +29,41 @@ exports.pointOddsPark = functions.runWith({
 .onRun(async (context) => {
   await runOddsPark(context);
 });
+exports.paymentOddsPark = functions.runWith({
+  memory: '1GB',
+  timeoutSeconds: 260,
+})
+.region('asia-northeast1')
+.pubsub.schedule('every day 19:00')
+.timeZone('Asia/Tokyo')
+.onRun(async (context) => {
+  await runPayment(context);
+});
 
-exports.runOddsPark = runOddsPark;
+
+async function runPayment(context){
+  if (!page) {
+    page = await getBrowserPage();
+  }
+  await page.goto('https://www.oddspark.com/auth/NbSeisanConfirm.do');
+  await page.type('[name=SSO_ACCOUNTID]', config.oddspark.id);
+  await page.type('[name=SSO_PASSWORD]', config.oddspark.pw);
+  let loadPromise = page.waitForNavigation();
+  await page.click('#btn-login');
+  await loadPromise;
+
+  await page.type('[name=INPUT_PIN]', config.oddspark.pin);
+  loadPromise = page.waitForNavigation();
+  await page.click('[name=送信]');
+  await loadPromise;
+
+  await page.type('#touhyoPassword', config.oddspark.pin);
+  loadPromise = page.waitForNavigation();
+  await page.click('.btn2');
+  await loadPromise;
+
+
+}
 
 async function runOddsPark(context){
   if (!page) {

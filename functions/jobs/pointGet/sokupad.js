@@ -18,7 +18,7 @@ async function getBrowserPage () {
   return browser.newPage()
 }
 
-exports.pointRakuten = functions.runWith({
+exports.pointSokuPad = functions.runWith({
   memory: '1GB',
   timeoutSeconds: 260,
 })
@@ -26,7 +26,7 @@ exports.pointRakuten = functions.runWith({
 .pubsub.schedule('every day 12:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
-  await runRakuten(context);
+  await runSokupad(context);
 });
 
 exports.runSokupad=runSokupad;
@@ -36,7 +36,10 @@ async function runSokupad(context){
     page = await getBrowserPage();
   }
 
-  await page.goto('https://www.ipat.jra.go.jp/');
+  await page.goto('https://www.ipat.jra.go.jp/', {waitUntil: "domcontentloaded"});
+
+  var canLogin = await page.$('[name=inetid]').then(res => !!res);
+  if(!canLogin)return;
   await page.type('[name=inetid]', config.sokupad.inet);
   loadPromise = page.waitForNavigation();
   await page.click('[title=ログイン]');
@@ -67,14 +70,9 @@ async function runSokupad(context){
   loadPromise = page.waitForNavigation();
   await waitClick(page, '.btn-green');
   await loadPromise;
-
-
 }
 
 async function waitClick(page, selector){
-  console.log(selector, "start")
   await page.waitForSelector(selector, {visible: true});
-  console.log(selector, "wait")
   await page.click(selector);
-  console.log(selector, "end")
 }

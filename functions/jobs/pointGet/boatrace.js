@@ -51,6 +51,10 @@ exports.pointBoat = functions.runWith({
   await newPage.click('#executeCharge');
   await newPage.waitForSelector('#ok', {visible: true});
   await newPage.click('#ok');
-  await newPage.click('#ok');
-  await newPage.click('#ok');
+  try{
+    await newPage.click('#ok');
+    await newPage.click('#ok');
+  }catch(e){
+    console.log(e);
+  }
 });

@@ -29,7 +29,7 @@ exports.getOdds = functions
     page = await getBrowserPage()
   }
   const getDate = (date)=>{return (date.getFullYear() + (""+(date.getMonth()+1)).slice(-2) + (""+(date.getDate())).slice(-2));};
-  var url = "http://www.boatrace.jp/owpc/pc/race/index?hd=" + (getDate(new Date()));
+  var url = "http://www.boatrace.jp/owpc/pc/race/index";
   console.log("url goto start");
   await page.goto(url, {waitUntil: 'domcontentloaded'});
   console.log("url goto end");

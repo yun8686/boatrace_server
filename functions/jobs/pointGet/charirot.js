@@ -5,6 +5,9 @@ const config = require('./data.json');
 
 let page, browser;
 
+exports.runCharirot = runCharirot;
+exports.runPayment = runPayment;
+
 async function getBrowserPage () {
   const isDebug = process.env.NODE_ENV !== 'production'
 
@@ -28,7 +31,41 @@ exports.pointCharirot = functions.runWith({
   await runCharirot(context);
 });
 
-exports.runCharirot = runCharirot;
+exports.paymentCharirot = functions.runWith({
+  memory: '1GB',
+  timeoutSeconds: 260,
+})
+.region('asia-northeast1')
+.pubsub.schedule('every day 15:00')
+.timeZone('Asia/Tokyo')
+.onRun(async (context) => {
+  await runPayment(context);
+});
+
+
+
+
+
+async function runPayment(context){
+  if (!page) {
+    page = await getBrowserPage();
+  }
+  await page.goto('https://www.chariloto.com/login');
+  await page.type('#chariloto_id', config.charirot.id);
+  await page.type('#password', config.charirot.pw);
+  let loadPromise = page.waitForNavigation();
+  await page.click('[name=button]');
+  await loadPromise;
+
+  await page.goto('https://www.chariloto.com/bank_statements/new_withdraw');
+  await page.type('#mypage_bank_statement_withdrawal_form_pincode', config.charirot.pn);
+  loadPromise = page.waitForNavigation();
+  await page.click('[name=commit]');
+  await loadPromise;
+
+}
+
+
 
 async function runCharirot(context){
   if (!page) {

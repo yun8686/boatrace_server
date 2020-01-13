@@ -5,6 +5,9 @@ const config = require('./data.json');
 
 let page, browser;
 
+exports.runKeirin = runKeirin;
+exports.runPayment = runPayment;
+
 async function getBrowserPage () {
   const isDebug = process.env.NODE_ENV !== 'production'
 
@@ -28,7 +31,41 @@ exports.pointKeirin = functions.runWith({
   await runKeirin(context);
 });
 
-exports.runKeirin = runKeirin;
+exports.paymentKeirin = functions.runWith({
+  memory: '1GB',
+  timeoutSeconds: 260,
+})
+.region('asia-northeast1')
+.pubsub.schedule('every day 15:00')
+.timeZone('Asia/Tokyo')
+.onRun(async (context) => {
+  await runPayment(context);
+});
+
+
+
+async function runPayment(context){
+  if (!page) {
+    page = await getBrowserPage();
+  }
+  await page.goto('https://keirin.jp/pc/liquidateinstruct');
+  await page.type('#txtnetVotingAutId', config.keirin.id);
+  await page.type('#txtnetVotingPass', config.keirin.pw);
+  let loadPromise = page.waitForNavigation();
+  await page.click('#btnlogin');
+  await loadPromise;
+
+
+  loadPromise = page.waitForNavigation();
+  await page.click('#UNQ_orbutton_36');
+  await loadPromise;
+
+  await page.type('#UNQ_orexpandText_11', config.keirin.pin);
+  loadPromise = page.waitForNavigation();
+  await page.click('#UNQ_orbutton_18');
+  await loadPromise;
+
+}
 
 async function runKeirin(context){
   if (!page) {
