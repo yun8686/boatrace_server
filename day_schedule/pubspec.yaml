@@ -27,6 +27,8 @@ dependencies:
   firebase_auth: any
   cloud_firestore: any
   cloud_functions: any
+  admob_flutter: any
+  url_launcher: any
 
   sqflite: any
 

@@ -1,5 +1,16 @@
+import 'dart:collection';
+
+import 'package:day_schedule/Provider/ScheduleProvider.dart';
+import 'package:day_schedule/setting.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:admob_flutter/admob_flutter.dart';
+import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'Database/Schedule.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,59 +37,110 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   List<TimeTable> timeTables = List<TimeTable>();
   static CollectionReference collection = Firestore.instance.collection("schedules");
-
+  String _tabTitle = "";
+  String _todayStr = "";
   @override
   void initState(){
-    collection.document("20200113").get().then((DocumentSnapshot schedules){
-      print(schedules.data);
+    print("initstate");
+    refresh().then((d){
+      setState((){});
     });
-    timeTables.add(TimeTable(hour:08, kaijoList: <Kaijo>[Kaijo(name:"23", minute:46), Kaijo(name:"14", minute:55),]));
-    timeTables.add(TimeTable(hour:09, kaijoList: <Kaijo>[Kaijo(name:"23", minute:15), Kaijo(name:"14", minute:24), Kaijo(name:"23", minute:44), Kaijo(name:"14", minute:53),]));
-    timeTables.add(TimeTable(hour:10, kaijoList: <Kaijo>[Kaijo(name:"23", minute:14), Kaijo(name:"14", minute:22), Kaijo(name:"11", minute:34), Kaijo(name:"13", minute:34), Kaijo(name:"23", minute:44), Kaijo(name:"22", minute:50), Kaijo(name:"02", minute:51), Kaijo(name:"14", minute:51),]));
-    timeTables.add(TimeTable(hour:11, kaijoList: <Kaijo>[Kaijo(name:"13", minute:00), Kaijo(name:"04", minute:01), Kaijo(name:"11", minute:01), Kaijo(name:"23", minute:14), Kaijo(name:"02", minute:16), Kaijo(name:"17", minute:18), Kaijo(name:"22", minute:19), Kaijo(name:"14", minute:21), Kaijo(name:"04", minute:26), Kaijo(name:"13", minute:27), Kaijo(name:"11", minute:28), Kaijo(name:"02", minute:42), Kaijo(name:"17", minute:45), Kaijo(name:"23", minute:46), Kaijo(name:"22", minute:48), Kaijo(name:"04", minute:51), Kaijo(name:"14", minute:52), Kaijo(name:"11", minute:55),]));
-    timeTables.add(TimeTable(hour:12, kaijoList: <Kaijo>[Kaijo(name:"02", minute:08), Kaijo(name:"17", minute:11), Kaijo(name:"22", minute:17), Kaijo(name:"04", minute:18), Kaijo(name:"23", minute:19), Kaijo(name:"14", minute:25), Kaijo(name:"13", minute:30), Kaijo(name:"02", minute:35), Kaijo(name:"17", minute:38), Kaijo(name:"13", minute:41), Kaijo(name:"11", minute:45), Kaijo(name:"04", minute:46), Kaijo(name:"22", minute:46), Kaijo(name:"23", minute:52), Kaijo(name:"13", minute:53), Kaijo(name:"14", minute:58),]));
-    timeTables.add(TimeTable(hour:13, kaijoList: <Kaijo>[Kaijo(name:"02", minute:03), Kaijo(name:"13", minute:05), Kaijo(name:"17", minute:06), Kaijo(name:"11", minute:13), Kaijo(name:"04", minute:14), Kaijo(name:"22", minute:16), Kaijo(name:"13", minute:17), Kaijo(name:"23", minute:27), Kaijo(name:"13", minute:29), Kaijo(name:"02", minute:31), Kaijo(name:"17", minute:35), Kaijo(name:"11", minute:41), Kaijo(name:"13", minute:41), Kaijo(name:"04", minute:42), Kaijo(name:"22", minute:47), Kaijo(name:"14", minute:48), Kaijo(name:"13", minute:53),]));
-    timeTables.add(TimeTable(hour:14, kaijoList: <Kaijo>[Kaijo(name:"02", minute:00), Kaijo(name:"17", minute:03), Kaijo(name:"23", minute:04), Kaijo(name:"11", minute:09), Kaijo(name:"04", minute:11), Kaijo(name:"13", minute:12), Kaijo(name:"14", minute:18), Kaijo(name:"22", minute:18), Kaijo(name:"02", minute:30), Kaijo(name:"17", minute:31), Kaijo(name:"11", minute:38), Kaijo(name:"04", minute:40), Kaijo(name:"23", minute:44), Kaijo(name:"14", minute:49), Kaijo(name:"22", minute:49), Kaijo(name:"17", minute:59), Kaijo(name:"20", minute:59),]));
-    timeTables.add(TimeTable(hour:15, kaijoList: <Kaijo>[Kaijo(name:"02", minute:01), Kaijo(name:"11", minute:07), Kaijo(name:"20", minute:08), Kaijo(name:"04", minute:11), Kaijo(name:"24", minute:18), Kaijo(name:"20", minute:19), Kaijo(name:"22", minute:21), Kaijo(name:"17", minute:28), Kaijo(name:"20", minute:28), Kaijo(name:"02", minute:32), Kaijo(name:"11", minute:37), Kaijo(name:"20", minute:38), Kaijo(name:"04", minute:42), Kaijo(name:"24", minute:43), Kaijo(name:"20", minute:48), Kaijo(name:"22", minute:54), Kaijo(name:"17", minute:58), Kaijo(name:"20", minute:58),]));
-    timeTables.add(TimeTable(hour:16, kaijoList: <Kaijo>[Kaijo(name:"02", minute:04), Kaijo(name:"20", minute:08), Kaijo(name:"11", minute:09), Kaijo(name:"04", minute:17), Kaijo(name:"20", minute:18), Kaijo(name:"24", minute:24), Kaijo(name:"20", minute:28), Kaijo(name:"17", minute:29), Kaijo(name:"19", minute:29), Kaijo(name:"22", minute:32), Kaijo(name:"19", minute:38), Kaijo(name:"20", minute:38), Kaijo(name:"19", minute:47), Kaijo(name:"24", minute:52), Kaijo(name:"20", minute:56), Kaijo(name:"19", minute:57),]));
-    timeTables.add(TimeTable(hour:17, kaijoList: <Kaijo>[Kaijo(name:"19", minute:09), Kaijo(name:"19", minute:18), Kaijo(name:"24", minute:20), Kaijo(name:"19", minute:27), Kaijo(name:"19", minute:37), Kaijo(name:"19", minute:47), Kaijo(name:"24", minute:48), Kaijo(name:"19", minute:57),]));
-    timeTables.add(TimeTable(hour:18, kaijoList: <Kaijo>[Kaijo(name:"19", minute:07), Kaijo(name:"24", minute:17), Kaijo(name:"19", minute:26), Kaijo(name:"24", minute:46),]));
-    timeTables.add(TimeTable(hour:19, kaijoList: <Kaijo>[Kaijo(name:"24", minute:15), Kaijo(name:"24", minute:45),]));
-    timeTables.add(TimeTable(hour:20, kaijoList: <Kaijo>[Kaijo(name:"24", minute:15), Kaijo(name:"24", minute:44),]));
     super.initState();
+  }
+
+  Future<void> refresh()async{
+    DateTime now = DateTime.now();
+    print(now);
+    _todayStr = now.year.toString() + now.month.toString().padLeft(2,'0') + now.day.toString().padLeft(2,'0');
+    _tabTitle = now.year.toString() + "/" + now.month.toString().padLeft(2,'0') + "/" + now.day.toString().padLeft(2,'0');;
+    List<Schedule> schedules = await ScheduleProvider.getSchedule(_todayStr);
+    timeTables = List<TimeTable>();
+    HashMap<int, TimeTable> hourMap = HashMap<int, TimeTable>();
+    schedules.forEach((Schedule schedule){
+      schedule.timeList.forEach((TimeList timelist){
+        if(!hourMap.containsKey(timelist.hour)){
+          hourMap[timelist.hour] = TimeTable(hour: timelist.hour, kaijoList: <Kaijo>[]);
+          timeTables.add(hourMap[timelist.hour]);
+        }
+        hourMap[timelist.hour].kaijoList.add(
+            Kaijo(
+              name: schedule.jouname+timelist.raceno,
+              minute: timelist.minute,
+              rno: timelist.rno,
+              jcd: schedule.jcd,
+              info: timelist.info,
+              info2: timelist.info2,
+            )
+        );
+      });
+    });
+    if(hourMap[now.hour] != null) hourMap[now.hour].isExpanded = true;
+    timeTables.sort((a,b){return a.hour-b.hour;});
+    timeTables.forEach((timeTable){
+      timeTable.kaijoList.sort((a,b){return a.minute-b.minute;});
+    });
   }
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 1,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Tab Controller'),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.settings, color: Colors.white),
+              onPressed: (){
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return Setting();
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+          title: Text('競艇タイムスケジュール'),
           bottom: PreferredSize(
             child: TabBar(
               isScrollable: true,
               tabs: <Tab>[
-                Tab(text: "aaa"),
-                Tab(text: "bbb"),
+                Tab(text: _tabTitle),
               ],
             ),
             preferredSize: Size.fromHeight(30.0),
           ),
         ),
         body: TabBarView(children: <Widget>[
-          _scheduleList(),
-          _scheduleList(),
+          Column(
+            children: <Widget>[
+              AdmobBanner(
+                adUnitId: getBannerAdUnitId(),
+                adSize: AdmobBannerSize.BANNER,
+              ),
+              Expanded(child: _scheduleList(),),
+            ],
+          ),
         ]),
       ),
     );
   }
-  ListView _scheduleList(){
-    return ListView(
-      physics: BouncingScrollPhysics(),
-      children: timeTables.map(_createExpansionPanel).toList(),
+  Widget _scheduleList(){
+    if(timeTables.length == 0){
+      return Text("ロード中");
+    }
+    return RefreshIndicator(
+      onRefresh: (){
+        return refresh().then((d){
+          setState((){});
+        });
+      },
+      child: ListView(
+        physics: BouncingScrollPhysics(),
+        children: timeTables.map(_createExpansionPanel).toList(),
+      ),
     );
   }
   Widget _createExpansionPanel(TimeTable timeTable){
@@ -86,16 +148,15 @@ class _MyHomePageState extends State<MyHomePage> {
       margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       padding: const EdgeInsets.all(0),
       child: ExpansionTile(
+        initiallyExpanded: timeTable.isExpanded,
         title: Text(timeTable.hour.toString() + "時台"),
         children: timeTable.kaijoList.map((kaijo){
-          return ListTile(
-              trailing: Icon(Icons.arrow_forward_ios),
-              title: Text(
-                kaijo.name,
-              ),
-              subtitle: Text(
-                  timeTable.hour.toString() + ":" + kaijo.minute.toString()
-              )
+          String url = 'https://www.boatrace.jp/owsp/sp/race/beforeinfo?hd=${_todayStr}&jcd=${kaijo.jcd}&rno=${kaijo.rno}';
+          return _CustomListTile(
+            url: url,
+            raceName: kaijo.name,
+            time: timeTable.hour.toString().padLeft(2,"0") + ":" + kaijo.minute.toString().padLeft(2,"0"),
+            infoText: (kaijo.info??"") + "\n" + (kaijo.info2??""),
           );
         }).toList(),
       ),
@@ -103,7 +164,48 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
+
+  String getBannerAdUnitId() {
+    if (Platform.isIOS) {
+      return 'ca-app-pub-2360113281922238/4368104120';
+    } else if (Platform.isAndroid) {
+      return 'ca-app-pub-3940256099942544/6300978111';
+    }
+    return null;
+  }
 }
+
+class _CustomListTile extends StatelessWidget{
+  String url;
+  String raceName;
+  String time;
+  String infoText = "-";
+  _CustomListTile({this.url, this.raceName, this.time, this.infoText});
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+        trailing: Icon(Icons.arrow_forward_ios),
+        onTap: ()async{
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            throw 'Could not launch $url';
+          }
+        },
+        isThreeLine: true,
+        title: Text(
+          '$raceName ( 締切: $time )'??"",
+        ),
+        subtitle: Text(
+          (infoText??""),
+        ),
+    );
+  }
+
+}
+
+/*
+ */
 
 class TimeTable{
   int hour;
@@ -114,5 +216,8 @@ class TimeTable{
 class Kaijo{
   String name;
   int minute;
-  Kaijo({this.name, this.minute});
+  String jcd;
+  String rno;
+  String info, info2;
+  Kaijo({this.name, this.minute, this.jcd, this.rno, this.info, this.info2});
 }

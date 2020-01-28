@@ -16,3 +16,4 @@ Object.assign(exports, require('./jobs/pointGet/autorace'));
 
 
 Object.assign(exports, require('./jobs/kyotei/getSchedule'));
+Object.assign(exports, require('./jobs/kyotei/updateOdds'));

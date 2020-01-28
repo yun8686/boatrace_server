@@ -33,6 +33,15 @@ exports.getSchedule = functions
 async function runGetSchedule(context){
   browser = await initBrowser();
   const page = await browser.newPage();
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    if(['stylesheet','image','font', 'script'].indexOf(req.resourceType())>=0){
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+
   function convertUTCtoJST(date) {
     return new Date(date.getTime() + (date.getTimezoneOffset() * 60 * 1000)+9*60*60*1000);
   }
@@ -69,6 +78,7 @@ async function runGetSchedule(context){
   const urlData = urls.map(url=>{
     return {
       url: url.href,
+      hd: url.href.match(/hd=(\d+)/)[1],
       jcd: url.href.match(/jcd=(\d+)/)[1],
       days: url.days,
       jouname: url.jouname,
@@ -77,14 +87,28 @@ async function runGetSchedule(context){
 
   const dataList = [];
   for(const data of urlData){
-    await page.goto(data.url, {waitUntil: 'domcontentloaded'});
+    const url = `https://www.boatrace.jp/owpc/pc/race/raceindex?jcd=${data.jcd}&hd=${data.hd}`
+    await page.goto(url, {waitUntil: 'domcontentloaded'});
     const map = dataList[dataList.length] = data;
     map.timeList = await page.evaluate(async()=>{
       const arr = [];
-      const timeList = document.querySelectorAll('.h-mt10 tbody tr td');
-      for(let i=1;i<=12;i++){
-        const time = timeList[i].innerText;
-        arr.push({time, name: "特選", info: "曇り|風速 1m|波高 1cm"});
+      const tbodys = document.querySelectorAll(".table1 tbody");
+      for(let i=0;i<12;i++){
+        const td = tbodys[i].querySelectorAll("td");
+        arr.push({
+          rno: td[0].querySelector("a").href.match(/rno=(\d+)/)[1],
+          raceno: td[0].innerText,
+          time: td[1].innerText,
+          racers: [
+            td[4].innerText.split(String.fromCharCode(10)).reverse().join(":"),
+            td[5].innerText.split(String.fromCharCode(10)).reverse().join(":"),
+            td[6].innerText.split(String.fromCharCode(10)).reverse().join(":"),
+            td[7].innerText.split(String.fromCharCode(10)).reverse().join(":"),
+            td[8].innerText.split(String.fromCharCode(10)).reverse().join(":"),
+            td[9].innerText.split(String.fromCharCode(10)).reverse().join(":"),
+          ],
+        });
+//        arr.push({time, name: "特選", info: "曇り|風速 1m|波高 1cm"});
       }
       return arr;
     });

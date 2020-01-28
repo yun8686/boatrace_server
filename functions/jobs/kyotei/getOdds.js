@@ -3,18 +3,20 @@ const puppeteer = require('puppeteer');
 const admin = require('firebase-admin');
 const db = admin.firestore();
 
-let page
+exports.runGetOdds = runGetOdds;
 
-async function getBrowserPage () {
+
+let browser;
+async function initBrowser () {
+  if (browser) return browser;
   const isDebug = process.env.NODE_ENV !== 'production'
 
   const launchOptions = {
     headless: isDebug ? false : true,
-    args: ['--no-sandbox']
+    args: ['--no-sandbox'],
   }
 
-  const browser = await puppeteer.launch(launchOptions)
-  return browser.newPage()
+  return browser = await puppeteer.launch(launchOptions)
 }
 
 exports.getOdds = functions
@@ -25,9 +27,23 @@ exports.getOdds = functions
 .pubsub.schedule('every 5 minutes from 8:00 to 20:50')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
-  if (!page) {
-    page = await getBrowserPage()
-  }
+  await runGetOdds();
+});
+
+async function runGetOdds(){
+  browser = await initBrowser();
+  const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    if(['stylesheet','image','font', 'script'].indexOf(req.resourceType())>=0){
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+
+
   const getDate = (date)=>{return (date.getFullYear() + (""+(date.getMonth()+1)).slice(-2) + (""+(date.getDate())).slice(-2));};
   var url = "http://www.boatrace.jp/owpc/pc/race/index";
   console.log("url goto start");
@@ -44,7 +60,8 @@ exports.getOdds = functions
 
   const urlDataSet = urls.map(url=>{
     return {
-      url: url.replace("odds3t", "odds2tf"),
+      url3t: url,
+      url2tf: url.replace("odds3t", "odds2tf"),
       rno: url.match(/rno=(\d+)/)[1],
       jcd: url.match(/jcd=(\d+)/)[1],
       hd: url.match(/hd=(\d+)/)[1],
@@ -52,7 +69,7 @@ exports.getOdds = functions
   });
 
   for(let urlData of urlDataSet){
-    let url = urlData.url;
+    let url = urlData.url2tf;
     await page.goto(url, {waitUntil: 'domcontentloaded'});
     let oddsData = await page.evaluate(async()=>{
       const arr = [];
@@ -80,11 +97,15 @@ exports.getOdds = functions
         data: map,
       };
     });
-    await db.collection(urlData.hd).doc(urlData.jcd + "_" + urlData.rno)
-    .collection('2todds').doc(oddsData.oddsTime||'end').set(Object.assign(urlData, {
-      oddsTime: oddsData.oddsTime,
+    console.log(
+    Object.assign(urlData, {
       odds: oddsData.data,
+      oddsTime: oddsData.oddsTime,
     }));
-    console.log(oddsData);
+    // await db.collection(urlData.hd).doc(urlData.jcd + "_" + urlData.rno)
+    // .collection('2todds').doc(oddsData.oddsTime||'end').set(Object.assign(urlData, {
+    //   oddsTime: oddsData.oddsTime,
+    //   odds: oddsData.data,
+    // }));
   }
-});
+}
