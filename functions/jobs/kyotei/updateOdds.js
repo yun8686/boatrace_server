@@ -46,12 +46,11 @@ async function runUpdateOdds(context){
   }
   const getDate = (date)=>{
     date = new Date(date.getTime() + (date.getTimezoneOffset() * 60 * 1000)+9*60*60*1000);
-    console.log("date", date);
     return (date.getFullYear() + ("0"+(date.getMonth()+1)).slice(-2) + ("0"+(date.getDate())).slice(-2));
   };
   const getTime = (date)=>{
     date = new Date(date.getTime() + (date.getTimezoneOffset() * 60 * 1000)+9*60*60*1000);
-    return (date.getHours()+":"+date.getMinutes());
+    return (("0"+date.getHours()).slice(-2)+":"+("0"+date.getMinutes()).slice(-2));
   };
   const now = new Date();
   const dateText = getDate(now);
@@ -64,8 +63,6 @@ async function runUpdateOdds(context){
   for(var i=0;i<list.length;i++){
     const data = list[i];
     const timeData = data.timeList.find(v=>v.time>timeText);
-    console.log("timeData", timeData);
-    console.log("timeText", timeText);
 
     if(!timeData)continue;
     // 直前情報を取得
@@ -97,7 +94,7 @@ async function runUpdateOdds(context){
               const odds = newList[idx++]-0;
               const ptn = `${a}-${b}-${c}`;
               oddsData.oddsList[ptn] = odds;
-              if(odds < oddsData.min_odds){
+              if(odds != 0 && odds < oddsData.min_odds){
                 oddsData.min_odds = odds;
                 oddsData.min_oddpth = ptn;
               }
@@ -107,11 +104,49 @@ async function runUpdateOdds(context){
       }
       return oddsData;
     });
+
+    // ２連単オッズを取得
+    await page.goto(`http://www.boatrace.jp/owpc/pc/race/odds2tf?rno=${timeData.rno}&jcd=${data.jcd}&hd=${dateText}`, {waitUntil: 'domcontentloaded'});
+    const odds2Data = await page.evaluate(async()=>{
+      var list = [], newList=[];
+      document.querySelectorAll(".table1 .oddsPoint").forEach(v=>list.push(v.innerText));
+      for(var j=0;j<6;j++){
+        for(var i=0;i<5;i++){
+        newList.push(list[j+i*6]);
+        }
+      }
+      var oddsData = {
+        min_odds: 1000,
+        min_oddpth: "",
+        oddsList: {},
+      };
+      var idx = 0;
+      for(var a=1;a<=6;a++){
+        for(var b=1;b<=6;b++){
+          if(a!=b){
+            const odds = newList[idx++]-0;
+            const ptn = `${a}-${b}`;
+            oddsData.oddsList[ptn] = odds;
+            if(odds != 0 && odds < oddsData.min_odds){
+              oddsData.min_odds = odds;
+              oddsData.min_oddpth = ptn;
+            }
+          }
+        }
+      }
+      return oddsData;
+    });
+
     timeData.oddsData = {
       min_odds: oddsData.min_odds,
       min_oddpth: oddsData.min_oddpth,
+      min_odds2: odds2Data.min_odds,
+      min_oddpth2: odds2Data.min_oddpth,
     };
-    oddsList[data.jcd + "_" + timeData.rno] = oddsData.oddsList;
+    oddsList[data.jcd + "_" + timeData.rno] = {
+      "3t": oddsData.oddsList,
+      "2t": odds2Data.oddsList,
+    };
   }
   await db.collection("schedules").doc(dateText).set({
     dataList: list,
@@ -119,7 +154,4 @@ async function runUpdateOdds(context){
   await db.collection("odds").doc(dateText).set({
     dataList:oddsList,
   });
-
-//  console.log(list);
-
 }

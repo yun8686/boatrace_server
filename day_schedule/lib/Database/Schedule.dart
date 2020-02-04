@@ -15,17 +15,19 @@ class Schedule{
     this.days = map["days"];
     this.timeList = (map["timeList"] as List).map((time){
       print(time["oddsData"]);
-      String min_oddpth = "",min_odds = "";
+      String min_oddpth = "",min_odds = "",min_oddpth2 = "",min_odds2 = "";
       if(time["oddsData"] != null){
         min_oddpth = time["oddsData"]["min_oddpth"];
         min_odds = time["oddsData"]["min_odds"].toString();
+        min_oddpth2 = time["oddsData"]["min_oddpth2"];
+        min_odds2 = time["oddsData"]["min_odds2"].toString();
       }
       return TimeList(
         raceno: time["raceno"],
         rno: time["rno"],
         time: time["time"],
         info: time["info"],
-        info2: "一番人気: $min_oddpth ($min_odds倍)",
+        info2: "一番人気: $min_oddpth ($min_odds倍), $min_oddpth2 ($min_odds2倍)",
       );
     }).toList();
   }
