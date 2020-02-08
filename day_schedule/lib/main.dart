@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: '競艇スケジュール'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -43,7 +44,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String _todayStr = "";
   @override
   void initState(){
-    print("initstate");
     refresh().then((d){
       setState((){});
     });
@@ -52,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> refresh()async{
     DateTime now = DateTime.now();
-    print(now);
     _todayStr = now.year.toString() + now.month.toString().padLeft(2,'0') + now.day.toString().padLeft(2,'0');
     _tabTitle = now.year.toString() + "/" + now.month.toString().padLeft(2,'0') + "/" + now.day.toString().padLeft(2,'0');;
     List<Schedule> schedules = await ScheduleProvider.getSchedule(_todayStr);
@@ -72,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
               jcd: schedule.jcd,
               info: timelist.info,
               info2: timelist.info2,
+              info3: timelist.info3,
             )
         );
       });
@@ -89,6 +89,14 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         appBar: AppBar(
           actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: (){
+                return refresh().then((d){
+                  setState((){});
+                });
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.settings, color: Colors.white),
               onPressed: (){
@@ -152,11 +160,18 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(timeTable.hour.toString() + "時台"),
         children: timeTable.kaijoList.map((kaijo){
           String url = 'https://www.boatrace.jp/owsp/sp/race/beforeinfo?hd=${_todayStr}&jcd=${kaijo.jcd}&rno=${kaijo.rno}';
+          String infoText = "";
+          if(kaijo.isEnd){
+            infoText = (kaijo.info??"") + "\n" + (kaijo.info2??"") + "\n" + (kaijo.info3??"");
+          }else{
+            infoText = (kaijo.info??"") + "\n" + (kaijo.info2??"");
+          }
           return _CustomListTile(
             url: url,
             raceName: kaijo.name,
             time: timeTable.hour.toString().padLeft(2,"0") + ":" + kaijo.minute.toString().padLeft(2,"0"),
-            infoText: (kaijo.info??"") + "\n" + (kaijo.info2??""),
+            infoText: infoText,
+            isEnd: kaijo.isEnd,
           );
         }).toList(),
       ),
@@ -169,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (Platform.isIOS) {
       return 'ca-app-pub-2360113281922238/4368104120';
     } else if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111';
+      return 'ca-app-pub-2360113281922238/1252901915';
     }
     return null;
   }
@@ -180,10 +195,15 @@ class _CustomListTile extends StatelessWidget{
   String raceName;
   String time;
   String infoText = "-";
-  _CustomListTile({this.url, this.raceName, this.time, this.infoText});
+  bool isEnd;
+  _CustomListTile({this.url, this.raceName, this.time, this.infoText, this.isEnd});
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return Container(
+      decoration: BoxDecoration (
+          color: this.isEnd?Colors.grey:Colors.transparent
+      ),
+      child: ListTile(
         trailing: Icon(Icons.arrow_forward_ios),
         onTap: ()async{
           if (await canLaunch(url)) {
@@ -199,6 +219,7 @@ class _CustomListTile extends StatelessWidget{
         subtitle: Text(
           (infoText??""),
         ),
+      ),
     );
   }
 
@@ -218,6 +239,9 @@ class Kaijo{
   int minute;
   String jcd;
   String rno;
-  String info, info2;
-  Kaijo({this.name, this.minute, this.jcd, this.rno, this.info, this.info2});
+  String info, info2, info3;
+  bool isEnd; // 終了しているかどうか
+  Kaijo({this.name, this.minute, this.jcd, this.rno, this.info, this.info2, this.info3}){
+    this.isEnd = (this.info3 != null);  // 結果があれば終了
+  }
 }

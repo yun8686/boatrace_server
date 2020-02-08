@@ -48,10 +48,19 @@ exports.paymentAutorace = functions.runWith({
 async function runDeposit(context){
   if (!page) {
     page = await getBrowserPage();
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      if(['stylesheet','image','font', 'script'].indexOf(req.resourceType())>=0){
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
     page.on('dialog', async dialog => {
       dialog.accept(); // OK
     });
   }
+  
   await page.goto('https://pc.autoinet.jp/');
   await page.type('[name=userId]', config.autorace.id);
   await page.type('[name=password]', config.autorace.pw);
@@ -73,6 +82,14 @@ async function runDeposit(context){
 async function runPayment(context){
   if (!page) {
     page = await getBrowserPage();
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      if(['stylesheet','image','font' ].indexOf(req.resourceType())>=0){
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
     page.on('dialog', async dialog => {
       dialog.accept(); // OK
     });
