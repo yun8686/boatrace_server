@@ -5,6 +5,8 @@ const config = require('./data.json');
 
 let page, browser;
 
+exports.runPayment = runPayment;
+
 async function getBrowserPage () {
   const isDebug = process.env.NODE_ENV !== 'production'
 
@@ -24,7 +26,12 @@ exports.pointBoat = functions.runWith({
 .region('asia-northeast1')
 .pubsub.schedule('every day 9:00')
 .timeZone('Asia/Tokyo')
-.onRun(async (context) => {
+.onRun(async (context)=>{
+  await runPayment(context);
+});
+
+
+async function runPayment(context){
   if (!page) {
     page = await getBrowserPage()
   }
@@ -57,4 +64,4 @@ exports.pointBoat = functions.runWith({
   }catch(e){
     console.log(e);
   }
-});
+}

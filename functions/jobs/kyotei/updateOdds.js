@@ -21,10 +21,10 @@ async function initBrowser () {
 exports.updateOdds = functions
 .runWith({
   memory: '1GB',
-  timeoutSeconds: 260,
+  timeoutSeconds: 500,
 })
 .region('asia-northeast1')
-.pubsub.schedule('every 5 minutes from 8:00 to 20:50')
+.pubsub.schedule('every 5 minutes from 8:30 to 21:00')
 .timeZone('Asia/Tokyo')
 .onRun(async (context) => {
   await runUpdateOdds(context);
@@ -150,7 +150,8 @@ async function runUpdateOdds(context){
     }
 
     // 結果を取得
-    const resultTimeData = data.timeList.reverse().find(v=>v.time<timeText);
+    const resultTimeData = data.timeList.find(v=>!v.resultData);
+    console.log("resultTimeData", resultTimeData);
     if(resultTimeData){
       await page.goto(`http://www.boatrace.jp/owpc/pc/race/raceresult?rno=${resultTimeData.rno}&jcd=${data.jcd}&hd=${dateText}`, {waitUntil: 'domcontentloaded'});
       const resultData = await page.evaluate(async()=>{

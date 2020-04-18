@@ -9,7 +9,11 @@ admin.initializeApp({
   databaseURL: "https://boatrace-66b99.firebaseio.com",
   credential: admin.credential.cert(require("./config.json"))
 });
+
+require('./jobs/pointGet/boatrace').runPayment().then(()=>process.exit());
+
+
 //require('./jobs/kyotei/getSchedule').runGetSchedule();
 //require('./jobs/kyotei/getOdds').runGetOdds();
-require('./jobs/kyotei/updateOdds').runUpdateOdds();
+//require('./jobs/kyotei/updateOdds').runUpdateOdds();
 
