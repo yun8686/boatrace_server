@@ -10,10 +10,11 @@ admin.initializeApp({
   credential: admin.credential.cert(require("./config.json")),
 });
 
-require("./jobs/pointGet/charirot")
-  .runCharirot()
-  .then(() => process.exit());
+// require("./jobs/pointGet/charirot")
+//   .runCharirot()
+//   .then(() => process.exit());
 
-//require('./jobs/kyotei/getSchedule').runGetSchedule();
+require("./jobs/pointGet/boatrace").runPayment();
+//require("./jobs/kyotei/getSchedule").runGetSchedule();
 //require('./jobs/kyotei/getOdds').runGetOdds();
 //require('./jobs/kyotei/updateOdds').runUpdateOdds();
